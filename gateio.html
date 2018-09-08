@@ -1,0 +1,22 @@
+<html>
+
+<select id="market">
+    <option selected>EOS_USDT</option>
+    <option>BTC_USDT</option>
+    <option>ETH_USDT</option>
+</select>
+
+<button onclick="select_market()" id="btn_start">开始</button>
+
+<script>
+    var market_name = null;
+    function select_market() {
+        market_name = document.getElementById("market").value;
+        console.log(market_name);
+        document.getElementById("btn_start").disabled = true;
+        start_websocket();
+    }
+</script>
+
+<script src="websocket.js"></script>
+</html>
