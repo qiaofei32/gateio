@@ -8,7 +8,7 @@ import urllib
 from in2mysql import MySQL_API
 from web.wsgiserver import CherryPyWSGIServer
 
-mysql = MySQL_API()
+
 urls = ("/.*", "Index")
 
 class MyApplication(web.application):
@@ -29,7 +29,7 @@ class Index(object):
 			msg = json.loads(msg)
 			# print msg
 
-			method = msg["method"]
+			method = msg.get("method", "")
 
 			if method != "depth.update":
 				return ""
@@ -64,10 +64,11 @@ class Index(object):
 
 			N = bids_amount - asks_amount
 			if len(asks) > 10:
+				mysql = MySQL_API()
 				sql = "insert into asks_bids (market_name, asks, bids, asks_amount, bids_amount, N) values (%s, %s, %s, %s, %s, %s)"
 				mysql.write_items(sql=sql, param=[(market_name, json.dumps(asks), json.dumps(bids), asks_amount, bids_amount, N)], print_error=True, auto_commit=True)
-		except:
-			pass
+		except Exception as e:
+			print e
 
 		return "ok"
 			

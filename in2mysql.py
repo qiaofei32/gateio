@@ -1,5 +1,7 @@
 ﻿import os
+import sys
 import json
+import time
 import MySQLdb
 from warnings import filterwarnings
 filterwarnings('ignore', category=MySQLdb.Warning)
@@ -27,7 +29,7 @@ class MySQL_API(object):
 				connect_info = json.loads(data)
 		if not connect_info:
 			print "connect info error!"
-			return None
+			sys.exit(1)
 			
 		host = connect_info.get("host", "127.0.0.1")
 		port = connect_info.get("port", 3306)
@@ -49,8 +51,8 @@ class MySQL_API(object):
 					self.conn = None
 		if not self.conn:
 			print "Failed To Connect To MySQL,Quit..."
-			# sys.exit(1)
-			return None
+			sys.exit(1)
+
 		# print "Connect To MySQL Done..."
 		self.cursor = self.conn.cursor() 	
 		# self.cursor.execute("set names utf8")
@@ -61,7 +63,7 @@ class MySQL_API(object):
 			self.cursor.execute("CREATE DATABASE `%s` /*!40100 COLLATE 'utf8_general_ci' */;" %db) 
 			self.conn.select_db(db)
 	
-	def write_items(self, sql, param=None, auto_commit=True, print_error=False):
+	def write_items(self, sql, param=None, auto_commit=True, print_error=False, retry=3):
 		ret = [True, ""]
 		try:
 			if not param:
@@ -71,7 +73,15 @@ class MySQL_API(object):
 					# param = (("bbb",int(time.time())), ("ccc",33), ("ddd",44) )  
 					self.cursor.executemany(sql, param)
 			ret[1] = "Ok"
+
+			if auto_commit:
+				self.conn.commit()
+
 		except Exception as e:
+			if retry >= 0:
+				time.sleep(0.2)
+				return self.write_items(sql=sql, param=param, auto_commit=auto_commit, print_error=print_error, retry=retry-1)
+
 			if print_error:
 				print "=" * 60
 				print sql
@@ -79,8 +89,7 @@ class MySQL_API(object):
 				# print param
 			ret[0] = False
 			ret[1] = str(e)
-		if auto_commit:
-			self.conn.commit()
+
 		return ret
 		
 	def query(self, sql, param=None, print_error=False):

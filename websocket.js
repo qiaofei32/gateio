@@ -38,7 +38,7 @@ function start_websocket(e) {
 	(socket = new WebSocket(wss_url + "?v=" + Math.floor(1e6 * Math.random()))).onopen = function () {
 			console.log("Connected"),
 			socket_send_cmd(socket, "server.ping");
-			socket_send_cmd(socket, "depth.subscribe", [market_name, 30, "0.01"]);
+			socket_send_cmd(socket, "depth.subscribe", [market_name, 30, "0.0001"]);
 			// socket_send_cmd(socket, "trades.subscribe", [market_name]);
 			// socket_send_cmd(socket, "ticker.subscribe", [market_name]);
 	}
